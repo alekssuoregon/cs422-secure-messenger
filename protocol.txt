@@ -1,0 +1,22 @@
+Stego Encoding Protocol:
+    Input: Message=m, Image=img
+
+    1.) Calculate message size in bytes, call this b
+    2.) Calculate image data limit: (len(img.pixels)*3*2)/8 - 2. (because 3 channels per pixel, use the lower 2 bits. Floor this to bytes. First two bytes for message size)
+    3.) Ensure b can be encoded in 2 bytes 
+    4.) Create final message m_final = b(2 bytes) + m(len(m) bytes)
+    5.) Split message m_final into two bit chunks. Iterate over img.pixels in row-column order, encoding data in the lower two bits from r->g->b per pixel 
+    6.) Export new image
+
+Stego Decoding Protocol:
+    Input: Image=img
+
+    1.) Iterate over first 3 pixels extracting lower two bits from r->g->b channels
+    2.) Reconstruct first 2 bytes of message which is the message size. Call this b
+    3.) Iterate over pixels until you've reconstructed b bytes worth of data
+    4.) Return the data buffer
+
+Full Protocol:
+    1.) Perform diffie-hellman key exchange using stego-socket in an open-channel way
+    2.) For any new message m, use shared key for encryption before sending over stego socket 
+    3.) Decrypt all messages received using shared key
