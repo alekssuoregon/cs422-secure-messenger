@@ -19,4 +19,5 @@ if __name__ == "__main__":
                 message = steg_sock.recv()
             else:
                 print(message)
+                steg_sock.send("This is my return message")
                 message = []
