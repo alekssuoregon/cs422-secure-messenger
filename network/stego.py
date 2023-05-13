@@ -18,6 +18,7 @@ class StegoTranscoder:
         msg_bits = self._int_to_bitstring(int(len(payload_bits) / 8)) + payload_bits
 
         if len(msg_bits) > encodable_bits:
+            print("Failed here 2")
             return False
 
         # Encode message in image
@@ -117,21 +118,3 @@ class StegoTranscoder:
             if bit_s[i] == '1':
                 bits[i] = 1
         return bits
-                
-class StegoSocket:
-    def __init__(self, image_repo):
-        self.transcoder = StegoTranscoder()
-        None
-
-    def send(self, message):
-        return True
-
-    def recv(self):
-        return []
-
-class EncryptedStegoSocket:
-    def send(self, message):
-        return True
-    
-    def recv(self):
-        return []
