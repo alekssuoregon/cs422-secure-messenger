@@ -74,3 +74,6 @@ class StegoSocket:
         msg = self.transcoder.decode(medium_out_file)
         os.remove(medium_out_file)
         return msg
+    
+    def close(self):
+        self.sock.close()

@@ -1,17 +1,17 @@
 import sys
 sys.path.append("../network")
+sys.path.append("..")
 
 import json
 import select
 import socket
+import constants
 import threading
 from network.stegsocket import StegoSocket
 
 # Constants
 QUEUED_SOCKETS_LIMIT = 10 
-CHANNEL_PARAM = "channel"
 POLL_PERIOD_MS = 5000
-SOCK_TIMEOUT = 1 
 
 # Shared Memory
 sockets_mutex = threading.Lock()
@@ -27,12 +27,12 @@ def client_ingestion_daemon(host, port, image_repo):
 
     while True:
         client_sock, _ = sock.accept()
-        client_sock.settimeout(SOCK_TIMEOUT)
+        client_sock.settimeout(constants.SOCK_TIMEOUT)
         stego_sock = StegoSocket(image_repo, client_sock)
 
         raw_message = stego_sock.recv() 
         message = json.loads(raw_message)
-        channel = message[CHANNEL_PARAM]
+        channel = message[constants.CHANNEL_PARAM]
 
         pollers_mutex.acquire()
         sockets_mutex.acquire()
@@ -49,6 +49,7 @@ def cleanup_resource(channel_id, sock_id):
     del sockets[channel_id][sock_id]
 
     if len(sockets[channel_id]) == 0:
+        del pollers[channel_id]
         del sockets[channel_id]
 
 def routing_daemon():
@@ -73,7 +74,7 @@ def routing_daemon():
             # Relay messages
             sockets_mutex.acquire()
             if messages != []:
-                master_message = json.dumps(messages)
+                master_message = json.dumps({constants.MESSAGES_PARAM: messages})
                 for sock_id in list(sockets.keys()):
                     stego_sock = sockets[channel][sock_id]
                     try:
