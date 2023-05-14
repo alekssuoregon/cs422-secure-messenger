@@ -10,13 +10,14 @@ from flask import Flask, request, jsonify
 
 app = Flask(__name__)
 
-#Constants
+# Constants
 DEFAULT_RELAY_PORT = 56565
 
 # Global Service Variables
 active_connection = None
 image_repo = "../images"
 
+# Route to connect to server+channel
 @app.route("/connect")
 def connect():
     # Close current connection
@@ -50,11 +51,13 @@ def connect():
         return {'error': 'connection timeout'}, 408
 
 
+# Route to disconnect from server+channel
 @app.route("/disconnect")
 def disconnect():
     if active_connection is not None:
         active_connection.close()
 
+# Route to send message on current server+channel
 @app.route("/send")
 def send():
     message = request.args.get("message")
@@ -67,6 +70,7 @@ def send():
     else:
         return {'error': 'not connected to server'}, 500
 
+# Route to receive messages from current server+channels
 @app.route("/recv")
 def recv():
     if active_connection is not None:
@@ -77,3 +81,9 @@ def recv():
             return {'error': 'connection timeout'}, 408
     else:
         return {'error': 'not connected to server'}, 500
+
+# Route to change image repository
+@app.route("/images")
+def set_images():
+    image_repo = request.args.get("images")
+

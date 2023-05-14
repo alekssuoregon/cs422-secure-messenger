@@ -1,3 +1,3 @@
 CHANNEL_PARAM = "channel"
 MESSAGES_PARAM = "messages"
-SOCK_TIMEOUT = 1 
+SOCK_TIMEOUT = 5 
