@@ -19,12 +19,9 @@ class StegoSocket:
         self.image_repo = [os.path.join(image_repo, f) for f in os.listdir(image_repo) if os.path.isfile(os.path.join(image_repo, f))]
         self.img_idx = 0
 
-        self.mutex = threading.Lock()
         self.transcoder = StegoTranscoder()
-        None
 
     def send(self, message):
-        self.mutex.acquire()
         medium_in_file = self.image_repo[self.img_idx]
         self.img_idx = (self.img_idx + 1) % len(self.image_repo)
         medium_out_file = tempfile.NamedTemporaryFile().name + ".png"
@@ -34,7 +31,6 @@ class StegoSocket:
         
         img_size = os.path.getsize(medium_out_file)
         header = img_size.to_bytes(HEADER_SIZE, BYTE_ORDER, signed=False)
-        self.mutex.release()
 
         self.sock.sendall(header)
         with open(medium_out_file, "rb") as f:
@@ -75,9 +71,11 @@ class StegoSocket:
                 read_bytes += len(bytes_read)
                 f.write(bytes_read)
         
-        self.mutex.acquire()
-        msg = self.transcoder.decode(medium_out_file)
-        self.mutex.release()
+        try:
+            msg = self.transcoder.decode(medium_out_file)
+        except:
+            raise socket.error
+
         os.remove(medium_out_file)
         return msg
     

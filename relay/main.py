@@ -72,7 +72,7 @@ def routing_daemon():
                     try:
                         message = stego_sock.recv().decode(constants.CHAR_ENCODING)
                         messages.append(message)
-                    except socket.timeout:
+                    except:
                         cleanup_resource(channel, sock_id)
             sockets_mutex.release()
             pollers_mutex.release()
@@ -85,7 +85,7 @@ def routing_daemon():
                     stego_sock = sockets[channel][sock_id]
                     try:
                         stego_sock.send(master_message)
-                    except socket.timeout:
+                    except:
                         print("Problem. Cleaning up")
                         cleanup_resource(channel, sock_id)
             sockets_mutex.release()
