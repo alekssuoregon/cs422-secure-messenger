@@ -14,42 +14,40 @@ host = sys.argv[1]
 port = int(sys.argv[2])
 channel = sys.argv[3]
 
+username = str(input("Enter alias> "))
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 sock.connect((host, port))
 stego_sock = StegoSocket("../images/", sock)
 
-mutex = threading.Lock()
-messages = [] 
+handshake_msg = json.dumps({constants.CHANNEL_PARAM: channel}).encode(constants.CHAR_ENCODING)
+stego_sock.send(handshake_msg)
+print("[CONNECTED TO SERVER]")
+
+CURSOR_UP_ONE = '\x1b[1A'
+ERASE_LINE = '\x1b[2K'
 
 def receive_messages():
-    global messages
-
     while True:
         msg = stego_sock.recv()
         if msg is not None:
-            mutex.acquire()
-            messages.append(msg.decode(constants.CHAR_ENCODING))
-            mutex.release()
+            messages = json.loads(msg.decode(constants.CHAR_ENCODING))
+            for message in messages[constants.MESSAGES_PARAM]:
+                print(CURSOR_UP_ONE + ERASE_LINE + message)
         time.sleep(1)
+
+def write_messages():
+    while True:
+        message = username + "> " + str(input('> '))
+        if not stego_sock.send(message.encode(constants.CHAR_ENCODING)):
+            print("[ERROR] Failed to send message")
     
 
 
-handshake_msg = json.dumps({constants.CHANNEL_PARAM: channel}).encode(constants.CHAR_ENCODING)
-stego_sock.send(handshake_msg)
-receiver = threading.Thread(target=receive_messages, daemon=True)
+receiver = threading.Thread(target=receive_messages)
 receiver.start()
 
-while True:
-    message = str(input("Message> "))
-    if not stego_sock.send(bytes(message, constants.CHAR_ENCODING)):
-        print("Failed to send message")
-
-    mutex.acquire()
-    if len(messages) != 0: 
-        for msg in messages:
-            print("Received> ", msg)
-        messages = []
-    mutex.release()
+writer = threading.Thread(target=write_messages) 
+writer.start()
 
 
 
