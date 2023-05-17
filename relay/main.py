@@ -32,10 +32,9 @@ def client_ingestion_daemon(host, port, image_repo):
         client_sock.settimeout(constants.SOCK_TIMEOUT)
         stego_sock = StegoSocket(image_repo, client_sock)
 
-        raw_message = stego_sock.recv() 
+        raw_message = stego_sock.recv().decode(constants.CHAR_ENCODING) 
         message = json.loads(raw_message)
         channel = message[constants.CHANNEL_PARAM]
-        print("Received Channel: " + channel)
 
         pollers_mutex.acquire()
         sockets_mutex.acquire()
@@ -71,7 +70,7 @@ def routing_daemon():
                 if event and select.POLLIN:
                     stego_sock = sockets[channel][sock_id]
                     try:
-                        message = stego_sock.recv()
+                        message = stego_sock.recv().decode(constants.CHAR_ENCODING)
                         messages.append(message)
                     except socket.timeout:
                         cleanup_resource(channel, sock_id)
@@ -81,7 +80,7 @@ def routing_daemon():
             # Relay messages
             sockets_mutex.acquire()
             if len(messages) != 0:
-                master_message = json.dumps({constants.MESSAGES_PARAM: messages})
+                master_message = json.dumps({constants.MESSAGES_PARAM: messages}).encode(constants.CHAR_ENCODING)
                 for sock_id in list(sockets[channel].keys()):
                     stego_sock = sockets[channel][sock_id]
                     try:

@@ -5,6 +5,7 @@ class StegoTranscoder:
         self.header_size = 16
         self.chan_density = chan_density
 
+    # Message should be a 'bytes' object
     def encode(self, message, in_img_path, out_img_path):
         # Load image, calculate image size
         img = Image.open(in_img_path)
@@ -14,11 +15,10 @@ class StegoTranscoder:
 
         # Check if image sufficient size for message
         encodable_bits = width * height * channel_n * self.chan_density 
-        payload_bits = self._string_to_bitstring(message)
-        msg_bits = self._int_to_bitstring(int(len(payload_bits) / 8)) + payload_bits
+        payload_bits = self._bytes_to_bitstring(message)
+        msg_bits = self._int_to_bitstring(int(len(payload_bits) / 8), self.header_size) + payload_bits
 
         if len(msg_bits) > encodable_bits:
-            print("Failed here 2")
             return False
 
         # Encode message in image
@@ -93,27 +93,21 @@ class StegoTranscoder:
             i += 1
         img.close()
         
-        # Convert bytes to message string
-        message = ""
-        for i in range(len(msg_bytes)):
-            message += chr(msg_bytes[i])
-        return message
+        # Convert byte list into bytes object 
+        return bytes(msg_bytes)
 
-    def _string_to_bitstring(self, msg):
-        char_len = 8
-        bitstring = [0 for i in range(len(msg) * char_len)]
-        for i in range(len(msg)):
-            byte = ord(msg[i])
-            for j in range(char_len):
-                bitstring[i*char_len + j] = ((byte >> j) & 1)
+    def _bytes_to_bitstring(self, msg):
+        bitstring = []
+        for byte in msg:
+            bitstring += self._int_to_bitstring(int(byte), 8)
         return bitstring
-    
-    def _int_to_bitstring(self, num):
-        if num.bit_length() > self.header_size:
+
+    def _int_to_bitstring(self, num, bitstring_len):
+        if num.bit_length() > bitstring_len: 
             return None
         
         bit_s = bin(num).split('b')[1][::-1]
-        bits = [0 for i in range(self.header_size)]
+        bits = [0 for i in range(bitstring_len)]
         for i in range(len(bit_s)):
             if bit_s[i] == '1':
                 bits[i] = 1
