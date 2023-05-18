@@ -1,12 +1,12 @@
 from PIL import Image
 
 class StegoTranscoder:
-    def __init__(self, chan_density=2):
+    def __init__(self, chan_density: int = 2):
         self.header_size = 16
         self.chan_density = chan_density
 
     # Message should be a 'bytes' object
-    def encode(self, message, in_img_path, out_img_path):
+    def encode(self, message: bytes, in_img_path: str, out_img_path: str) -> bool:
         # Load image, calculate image size
         img = Image.open(in_img_path)
         pixels = img.load()
@@ -49,7 +49,7 @@ class StegoTranscoder:
         img.close()
         return True
     
-    def decode(self, in_img_path):
+    def decode(self, in_img_path: str) -> bytes:
         # Open image file
         img = Image.open(in_img_path)
         pixels = img.load()
@@ -96,13 +96,13 @@ class StegoTranscoder:
         # Convert byte list into bytes object 
         return bytes(msg_bytes)
 
-    def _bytes_to_bitstring(self, msg):
+    def _bytes_to_bitstring(self, msg: bytes) -> list[int]:
         bitstring = []
         for byte in msg:
             bitstring += self._int_to_bitstring(int(byte), 8)
         return bitstring
 
-    def _int_to_bitstring(self, num, bitstring_len):
+    def _int_to_bitstring(self, num: int, bitstring_len: int) -> list[int]:
         if num.bit_length() > bitstring_len: 
             return None
         

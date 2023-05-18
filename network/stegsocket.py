@@ -11,7 +11,7 @@ BUFFER_SIZE = 4096
 POLL_TIME_MS = 5000
 
 class StegoSocket:
-    def __init__(self, image_repo, sock):
+    def __init__(self, image_repo: str, sock: socket.socket):
         self.sock = sock 
         self.poller = select.poll() 
         self.poller.register(self.sock, select.POLLIN)
@@ -21,7 +21,7 @@ class StegoSocket:
 
         self.transcoder = StegoTranscoder()
 
-    def send(self, message):
+    def send(self, message: bytes) -> bool:
         medium_in_file = self.image_repo[self.img_idx]
         self.img_idx = (self.img_idx + 1) % len(self.image_repo)
         medium_out_file = tempfile.NamedTemporaryFile().name + ".png"
@@ -43,7 +43,7 @@ class StegoSocket:
 
         return True
 
-    def recv(self):
+    def recv(self) -> bytes | None:
         # Check if any data is on the pipe 
         header = None
         events = self.poller.poll(POLL_TIME_MS)
