@@ -30,7 +30,7 @@ def client_ingestion_daemon(host, port, image_repo):
     while True:
         client_sock, _ = sock.accept()
         client_sock.settimeout(constants.SOCK_TIMEOUT)
-        stego_sock = StegoSocket(image_repo, client_sock)
+        stego_sock = StegoSocket(image_repo, client_sock, is_server=True)
 
         raw_message = stego_sock.recv().decode(constants.CHAR_ENCODING) 
         message = json.loads(raw_message)

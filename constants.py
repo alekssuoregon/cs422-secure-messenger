@@ -1,5 +1,5 @@
 CHANNEL_PARAM = "channel"
 MESSAGES_PARAM = "messages"
-SOCK_TIMEOUT = 5 
+SOCK_TIMEOUT = 20 
 
 CHAR_ENCODING = 'utf-8'
