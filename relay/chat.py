@@ -17,7 +17,7 @@ channel = sys.argv[3]
 username = str(input("Enter alias> "))
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 sock.connect((host, port))
-stego_sock = StegoSocket("../images/", sock)
+stego_sock = StegoSocket("../images/", sock, encryption=True)
 
 handshake_msg = json.dumps({constants.CHANNEL_PARAM: channel}).encode(constants.CHAR_ENCODING)
 stego_sock.send(handshake_msg)

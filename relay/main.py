@@ -30,7 +30,7 @@ def client_ingestion_daemon(host, port, image_repo):
     while True:
         client_sock, _ = sock.accept()
         client_sock.settimeout(constants.SOCK_TIMEOUT)
-        stego_sock = StegoSocket(image_repo, client_sock, is_server=True)
+        stego_sock = StegoSocket(image_repo, client_sock, encryption=True, is_server=True)
 
         raw_message = stego_sock.recv().decode(constants.CHAR_ENCODING) 
         message = json.loads(raw_message)
@@ -42,8 +42,8 @@ def client_ingestion_daemon(host, port, image_repo):
             print("Creating Channel: " + channel)
             pollers[channel] = select.poll()
             sockets[channel] = {} 
-        pollers[channel].register(stego_sock.sock, select.POLLIN)
-        sockets[channel][stego_sock.sock.fileno()] = stego_sock
+        pollers[channel].register(stego_sock._sock, select.POLLIN)
+        sockets[channel][stego_sock._sock.fileno()] = stego_sock
         sockets_mutex.release()
         pollers_mutex.release()
 
