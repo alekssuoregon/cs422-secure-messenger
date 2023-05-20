@@ -20,3 +20,10 @@ Full Protocol:
     1.) Perform diffie-hellman key exchange using stego-socket in an open-channel way
     2.) For any new message m, use shared key for encryption before sending over stego socket 
     3.) Decrypt all messages received using shared key
+
+IDEA:
+ - Use DH derived key as seed to CSPRNG.
+ - Use the CSPRNG to generate a pixel rearrangement for encoding order
+ - Encode pixels in the 'randomized order'
+ - Since decoder has the same derived key, the can recalculate the rearrangement 
+ - Call this 'pixel diffusion operation'
