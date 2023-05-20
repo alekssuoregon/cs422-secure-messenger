@@ -139,7 +139,7 @@ class StegoSocket:
         else:
             parameter_header_size = self._sock.recv(HEADER_SIZE)
             parameter_header_size = int.from_bytes(parameter_header_size, BYTE_ORDER, signed=False)
-            parameter_bytes = self.__recv_n_bytes(parameter_header_size)
+            parameter_bytes = self._recv_n_bytes(parameter_header_size)
             parameters = serialization.load_pem_parameters(parameter_bytes)
 
         # Generate private key
@@ -157,7 +157,7 @@ class StegoSocket:
         # Receive peer public key
         recv_header_raw = self._sock.recv(HEADER_SIZE)
         recv_size_header = int.from_bytes(recv_header_raw, BYTE_ORDER, signed=False)
-        peer_pub_key_raw = self.__recv_n_bytes(recv_size_header) 
+        peer_pub_key_raw = self._recv_n_bytes(recv_size_header) 
         peer_pub_key = serialization.load_pem_public_key(bytes(peer_pub_key_raw)) 
 
         # Derive symmetric key
@@ -169,7 +169,7 @@ class StegoSocket:
             info=b'handshake'
         ).derive(self._shared_key)
     
-    def __recv_n_bytes(self, n: int):
+    def _recv_n_bytes(self, n: int):
         byte_buf = bytearray()
         while len(byte_buf) < n:
             to_read = BUFFER_SIZE
