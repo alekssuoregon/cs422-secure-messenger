@@ -30,7 +30,7 @@ class StegoSocket:
         self._transcoder = StegoTranscoder()
         self._use_encryption = encryption
         if self._use_encryption:
-            self.__key_exchange(is_server)
+            self._key_exchange(is_server)
 
     def send(self, message: bytes) -> bool:
         # Encrypt message if encryption mode is enabled 
@@ -126,7 +126,7 @@ class StegoSocket:
 
         return message
     
-    def __key_exchange(self, server: bool):
+    def _key_exchange(self, server: bool):
         # Generate/receive DH parameters
         if server:
             parameters = dh.generate_parameters(generator=2, key_size=2048)
