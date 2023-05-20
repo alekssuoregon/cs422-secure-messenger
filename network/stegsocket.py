@@ -2,7 +2,6 @@ import os
 import socket
 import select
 import tempfile
-import threading
 from stego import StegoTranscoder
 
 from cryptography.hazmat.primitives import hashes, serialization, padding
