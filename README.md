@@ -1,2 +1,2 @@
-# cs422-secure-messenger
-Secure Messaging Application using Stegonography
+# cs433-stego-sockets
+Python socket wrapper for steganography-secured communication
