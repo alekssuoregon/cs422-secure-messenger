@@ -4,9 +4,9 @@ import math
 
 class StegoTranscoder:
     def __init__(self, chan_density: int = 2, rearrange_key: bytes = None):
-        self.header_size = 16
-        self.chan_density = chan_density
-        self.key = rearrange_key
+        self._header_size = 16
+        self._chan_density = chan_density
+        self._key = rearrange_key
 
     # Message should be a 'bytes' object
     def encode(self, message: bytes, in_img_path: str, out_img_path: str) -> bool:
@@ -17,9 +17,9 @@ class StegoTranscoder:
         channel_n = len(pixels[0,0])
 
         # Check if image sufficient size for message
-        encodable_bits = width * height * channel_n * self.chan_density 
+        encodable_bits = width * height * channel_n * self._chan_density 
         msg_bits = self._bytes_to_bitstring(message)
-        header_bits = self._int_to_bitstring(int(len(msg_bits) / 8), self.header_size)
+        header_bits = self._int_to_bitstring(int(len(msg_bits) / 8), self._header_size)
 
         if len(msg_bits) + len(header_bits) > encodable_bits:
             return False
@@ -35,15 +35,15 @@ class StegoTranscoder:
                 k = 0
                 while k < channel_n:
                     l = 0
-                    channels[k] &= (0b11111111 << self.chan_density)
-                    while l < self.chan_density and cur_bit_n < self.header_size:
+                    channels[k] &= (0b11111111 << self._chan_density)
+                    while l < self._chan_density and cur_bit_n < self._header_size:
                         channels[k] += (header_bits[cur_bit_n] << l)
                         cur_bit_n += 1
                         l += 1
                     k += 1
                 pixels[i, j] = tuple(channels)
 
-                finished_encoding = (cur_bit_n >= self.header_size)
+                finished_encoding = (cur_bit_n >= self._header_size)
                 j += 1
             i += 1
 
@@ -58,8 +58,8 @@ class StegoTranscoder:
             k = 0
             while k < channel_n: 
                 l = 0
-                channels[k] &= (0b11111111 << self.chan_density)
-                while l < self.chan_density and cur_bit_n < len(msg_bits):
+                channels[k] &= (0b11111111 << self._chan_density)
+                while l < self._chan_density and cur_bit_n < len(msg_bits):
                     channels[k] += (msg_bits[cur_bit_n] << l) 
                     cur_bit_n += 1
                     l += 1
@@ -89,14 +89,14 @@ class StegoTranscoder:
 
         # Extract message header
         i = 0
-        while i < height and read_bits < self.header_size:
+        while i < height and read_bits < self._header_size:
             j = 0
-            while j < width and read_bits < self.header_size:
+            while j < width and read_bits < self._header_size:
                 channels = pixels[i, j] 
                 k = 0
-                while k < channel_n and read_bits < self.header_size:
+                while k < channel_n and read_bits < self._header_size:
                     l = 0
-                    while l < self.chan_density and read_bits < self.header_size:
+                    while l < self._chan_density and read_bits < self._header_size:
                         bit = (channels[k] >> l) & 1
                         size_header += (bit << read_bits)
                         read_bits += 1
@@ -119,7 +119,7 @@ class StegoTranscoder:
             k = 0
             while k < channel_n: 
                 l = 0
-                while l < self.chan_density and read_bits < size_header * 8:
+                while l < self._chan_density and read_bits < size_header * 8:
                     bit = (channels[k] >> l) & 1
                     cur_byte += (bit << cur_byte_idx)
                     cur_byte_idx += 1
@@ -157,13 +157,13 @@ class StegoTranscoder:
     
     # Generates pixel indices for encoding/decoding. Uses self.key for pixel rearrangement if provided
     def _generate_pixel_arrangement(self, width: int, height: int, channels: int, m_len: int) -> list[tuple]:
-        header_pixels = int(math.ceil(self.header_size / (self.chan_density * channels)))
+        header_pixels = int(math.ceil(self._header_size / (self._chan_density * channels)))
         starting_row = header_pixels // width
         starting_col = header_pixels % width
 
-        total_pixels = int(math.ceil((m_len * 8) / (self.chan_density * channels))) 
+        total_pixels = int(math.ceil((m_len * 8) / (self._chan_density * channels))) 
         arrangement = []
-        if self.key is not None:
+        if self._key is not None:
             start_num = (starting_row * width) + starting_col
             end_num = width * height
 
@@ -189,8 +189,8 @@ class StegoTranscoder:
         seed_vec = []
         k_idx = 0
         while len(seed_vec) < 256:
-            seed_vec.append(((self.key[k_idx] + len(seed_vec))**m_len) % 2**32)
-            k_idx = (k_idx + 1) % len(self.key)
+            seed_vec.append(((self._key[k_idx] + len(seed_vec))**m_len) % 2**32)
+            k_idx = (k_idx + 1) % len(self._key)
         
         rng = Isaac(seed_vec)
         return rng
