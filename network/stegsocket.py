@@ -30,6 +30,7 @@ class StegoSocket:
         self._use_encryption = encryption
         if self._use_encryption:
             self._key_exchange(is_server)
+            self._transcoder = StegoTranscoder(rearrange_key=self._rearrange_key)
 
     def send(self, message: bytes) -> bool:
         # Encrypt message if encryption mode is enabled 
@@ -160,14 +161,17 @@ class StegoSocket:
         peer_pub_key_raw = self._recv_n_bytes(recv_size_header) 
         peer_pub_key = serialization.load_pem_public_key(bytes(peer_pub_key_raw)) 
 
-        # Derive symmetric key
+        # Derive two symmetric keys. One for encryption
+        # and one for steganographic pixel diffusion
         self._shared_key = priv_key.exchange(peer_pub_key) 
-        self._derived_key = HKDF(
+        master_key = HKDF(
             algorithm=hashes.SHA256(),
-            length=AES_KEY_LENGTH,
+            length=AES_KEY_LENGTH * 2,
             salt=None,
             info=b'handshake'
         ).derive(self._shared_key)
+        self._derived_key = master_key[:AES_KEY_LENGTH]
+        self._rearrange_key = master_key[AES_KEY_LENGTH:]
     
     def _recv_n_bytes(self, n: int):
         byte_buf = bytearray()

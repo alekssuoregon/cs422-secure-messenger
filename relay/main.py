@@ -42,8 +42,8 @@ def client_ingestion_daemon(host, port, image_repo):
             print("Creating Channel: " + channel)
             pollers[channel] = select.poll()
             sockets[channel] = {} 
-        pollers[channel].register(stego_sock.__sock, select.POLLIN)
-        sockets[channel][stego_sock.__sock.fileno()] = stego_sock
+        pollers[channel].register(stego_sock._sock, select.POLLIN)
+        sockets[channel][stego_sock._sock.fileno()] = stego_sock
         sockets_mutex.release()
         pollers_mutex.release()
 
